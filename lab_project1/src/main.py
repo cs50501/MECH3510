@@ -1,4 +1,5 @@
-from ex1_1_part1visualize import main as run_ex1_1
+from ex1_1_part1visualize import main as run_ex1_1_1
+from ex1_1_part2rotate import main as run_ex1_1_2
 
 
 def main():
@@ -14,7 +15,10 @@ def main():
 
         if choice == "1":
             print("Close the figure windows to return to the menu.")
-            run_ex1_1()
+            run_ex1_1_1()
+        elif choice == "2":
+            print("Close the figure windows to return to the menu.")
+            run_ex1_1_2()
         elif choice == "99":
             print("Program terminated.")
             break

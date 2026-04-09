@@ -38,8 +38,8 @@ def main():
     twisted_mesh = mesh.Mesh.from_file(twisted_path)
     
     # Exercise 1-1 (1)   
-    plot_mesh(tessa_mesh, "Ex 1-1 (1) - Tessa Vase", "Ex 1-1 (1) - Tessa Vase", edgecolor="k")
-    plot_mesh(twisted_mesh, "Ex 1-1 (1) Twisted Vase", "Ex 1-1 (1) Twisted Vase", edgecolor="r")
+    plot_mesh(tessa_mesh, "Ex 1-1 (1) - Tessa Vase", "Tessa Vase", edgecolor="k")
+    plot_mesh(twisted_mesh, "Ex 1-1 (1) - Twisted Vase", "Twisted Vase", edgecolor="r")
     
     pyplot.show()
 
