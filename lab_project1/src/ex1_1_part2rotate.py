@@ -26,7 +26,7 @@ def plot_comparison(original_mesh, rotated_mesh, window_title, title):
     )
     
     scale = np.concatenate(
-        [original_mesh.points.flatten() + rotated_mesh.points.flatten()]
+        [original_mesh.points.flatten(), rotated_mesh.points.flatten()]
     )
     ax.auto_scale_xyz(scale, scale, scale)
     ax.set_title(title + " (black = original, red = rotated)")

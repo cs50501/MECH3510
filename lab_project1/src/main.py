@@ -6,7 +6,7 @@ def main():
     while True:
         print("\nChoose an exercise:")
         print("1. Exercise 1-1 (1) - Visualize both STL Files")
-        print("2. Exercise 1-2")
+        print("2. Exercise 1-1 (2) - Rotate the STL Files")
         print("3. Exercise 1-3")
         print("4. Exercise 2")
         print("99. Terminate Program")
