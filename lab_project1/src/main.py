@@ -1,6 +1,6 @@
-from ex1_1_part1visualize import main as run_ex1_1_1
-from ex1_1_part2rotate import main as run_ex1_1_2
-from ex1_1_part3calcsurfacearea import main as run_ex1_1_3
+from ex1_1_1 import main as run_ex1_1_1
+from ex1_1_2 import main as run_ex1_1_2
+from ex1_1_3 import main as run_ex1_1_3
 
 
 def main():
