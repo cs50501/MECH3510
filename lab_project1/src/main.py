@@ -1,13 +1,14 @@
 from ex1_1_part1visualize import main as run_ex1_1_1
 from ex1_1_part2rotate import main as run_ex1_1_2
+from ex1_1_part3calcsurfacearea import main as run_ex1_1_3
 
 
 def main():
     while True:
-        print("\nChoose an exercise:")
+        print("\nChoose an exercise (Type a number):")
         print("1. Exercise 1-1 (1) - Visualize both STL Files")
         print("2. Exercise 1-1 (2) - Rotate the STL Files")
-        print("3. Exercise 1-3")
+        print("3. Exercise 1-1 (3) - Calculate Total Surface Areas of the STL Files")
         print("4. Exercise 2")
         print("99. Terminate Program")
 
@@ -19,6 +20,8 @@ def main():
         elif choice == "2":
             print("Close the figure windows to return to the menu.")
             run_ex1_1_2()
+        elif choice == "3":
+            run_ex1_1_3()
         elif choice == "99":
             print("Program terminated.")
             break
