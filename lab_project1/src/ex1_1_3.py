@@ -64,8 +64,6 @@ def main():
     compare_area_results(tessa_mesh, "Tessa Vase")
     compare_area_results(twisted_mesh, "Twisted Vase")
     
-    pyplot.show()
-
 
 if __name__ == "__main__":
     main()
