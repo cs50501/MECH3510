@@ -25,6 +25,7 @@ def main():
             run_ex1_1_3()
         elif choice == "4":
             run_ex1_2()
+            print("Close the figure windows to return to the menu.")
         elif choice == "99":
             print("Program terminated.")
             break
