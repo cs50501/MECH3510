@@ -55,7 +55,7 @@ def plot_isosurface(vol, n, title):
     ax.view_init(elev=20, azim=-60)
 
 def main():
-    n = 301
+    n = 101
     x, y, z = np.mgrid[-1:1:complex(n), -1:1:complex(n), -1:1:complex(n)]
 
     mus = np.linspace(0, 1, 11)   # 0, 0.1, ..., 1.0
