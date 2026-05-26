@@ -1,0 +1,332 @@
+/CLEAR,START
+/FILNAME,wing_actual_size
+/PREP7
+
+! =========================================================
+! 1. PARAMETERS BASED ON ACTUAL HALF-WING
+! =========================================================
+span  = 1.0          ! 1000 mm half-wing span
+chord = 0.30         ! 300 mm chord
+
+n_rib = 13           ! 14 ribs total including root and tip
+dy = span/n_rib      ! rib spacing = 76.92 mm
+
+! Thickness / sizing variables
+t_skin = 0.001       ! 1 mm balsa skin
+t_spar = 0.002       ! 2 mm spar web
+t_rib  = 0.003       ! 3 mm rib web
+
+esize = 0.012        ! mesh size
+
+! Top skin opening
+open_y1 = 0.15*span
+open_y2 = 0.85*span
+
+! Rectangular rib opening
+hole_x1 = 0.35*chord
+hole_x2 = 0.55*chord
+hole_z1 = 0.004
+hole_z2 = 0.018
+
+! Aluminium hollow square tube
+tube_outer = 0.015   ! 15 mm
+tube_wall  = 0.002   ! 2 mm wall thickness
+tube_span  = 0.70*span
+tube_x     = 0.25*chord
+tube_z     = 0.010
+
+! =========================================================
+! 2. MATERIALS
+! MAT 1 = simplified balsa
+! MAT 2 = aluminium
+! =========================================================
+MP,EX,1,3.0e9
+MP,PRXY,1,0.30
+MP,DENS,1,160
+
+MP,EX,2,69e9
+MP,PRXY,2,0.33
+MP,DENS,2,2700
+
+! =========================================================
+! 3. ELEMENT TYPES AND SECTIONS
+! =========================================================
+ET,1,SHELL181
+ET,2,BEAM188
+
+SECTYPE,1,SHELL
+SECDATA,t_skin
+
+SECTYPE,2,SHELL
+SECDATA,t_spar
+
+SECTYPE,3,SHELL
+SECDATA,t_rib
+
+! Hollow rectangular aluminium tube
+SECTYPE,4,BEAM,HREC
+SECDATA,tube_outer,tube_outer,tube_wall,tube_wall,tube_wall,tube_wall
+
+! =========================================================
+! 4. AIRFOIL-LIKE GEOMETRY
+! Simplified Clark-Y-like shape
+! =========================================================
+npt = 9
+
+*DIM,xc,ARRAY,npt
+*DIM,zu,ARRAY,npt
+*DIM,zl,ARRAY,npt
+
+xc(1)=0.00
+xc(2)=0.05
+xc(3)=0.10
+xc(4)=0.20
+xc(5)=0.30
+xc(6)=0.45
+xc(7)=0.60
+xc(8)=0.80
+xc(9)=1.00
+
+zu(1)= 0.001
+zu(2)= 0.045*chord
+zu(3)= 0.065*chord
+zu(4)= 0.080*chord
+zu(5)= 0.075*chord
+zu(6)= 0.060*chord
+zu(7)= 0.045*chord
+zu(8)= 0.025*chord
+zu(9)= 0.001
+
+zl(1)=-0.001
+zl(2)=-0.010*chord
+zl(3)=-0.012*chord
+zl(4)=-0.010*chord
+zl(5)=-0.008*chord
+zl(6)=-0.006*chord
+zl(7)=-0.004*chord
+zl(8)=-0.002*chord
+zl(9)=-0.001
+
+! Spar positions
+jFS = 5       ! about 30% chord
+jRS = 8       ! about 60% chord
+
+n_tube = tube_span/dy
+n_tube = NINT(n_tube)
+
+! =========================================================
+! 5. CREATE KEYPOINTS
+! =========================================================
+*DO,i,0,n_rib
+    y = i*dy
+    b = i*1000
+
+    *DO,j,1,npt
+        x = xc(j)*chord
+        K,b+j,x,y,zu(j)
+        K,b+100+j,x,y,zl(j)
+    *ENDDO
+
+    ! rectangular rib-hole points
+    K,b+401,hole_x1,y,hole_z1
+    K,b+402,hole_x2,y,hole_z1
+    K,b+403,hole_x2,y,hole_z2
+    K,b+404,hole_x1,y,hole_z2
+
+    ! aluminium tube centreline point
+    K,b+500,tube_x,y,tube_z
+*ENDDO
+
+! =========================================================
+! 6. CREATE RIBS WITH RECTANGULAR OPENINGS
+! First two and last two ribs are full.
+! Internal ribs have simplified rectangular openings.
+! =========================================================
+TYPE,1
+MAT,1
+SECNUM,3
+
+*DO,i,0,n_rib
+    b = i*1000
+
+    *IF,i,LE,1,THEN
+        ! full root-side ribs
+        *DO,j,1,npt-1
+            A,b+j,b+j+1,b+100+j+1,b+100+j
+        *ENDDO
+
+    *ELSEIF,i,GE,n_rib-1,THEN
+        ! full tip-side ribs
+        *DO,j,1,npt-1
+            A,b+j,b+j+1,b+100+j+1,b+100+j
+        *ENDDO
+
+    *ELSE
+        ! leading region before front spar
+        *DO,j,1,jFS-1
+            A,b+j,b+j+1,b+100+j+1,b+100+j
+        *ENDDO
+
+        ! upper strip above hole
+        A,b+jFS,b+jRS,b+403
+        A,b+jFS,b+403,b+404
+
+        ! lower strip below hole
+        A,b+100+jFS,b+401,b+402
+        A,b+100+jFS,b+402,b+100+jRS
+
+        ! front strip before hole
+        A,b+jFS,b+404,b+401
+        A,b+jFS,b+401,b+100+jFS
+
+        ! rear strip after hole
+        A,b+jRS,b+100+jRS,b+402
+        A,b+jRS,b+402,b+403
+
+        ! trailing region after rear spar
+        *DO,j,jRS,npt-1
+            A,b+j,b+j+1,b+100+j+1,b+100+j
+        *ENDDO
+    *ENDIF
+*ENDDO
+! =========================================================
+! 7. CREATE FRONT AND REAR SPARS
+! =========================================================
+TYPE,1
+MAT,1
+SECNUM,2
+
+*DO,i,0,n_rib-1
+    b1 = i*1000
+    b2 = (i+1)*1000
+
+    A,b1+jFS,b2+jFS,b2+100+jFS,b1+100+jFS
+    A,b1+jRS,b1+100+jRS,b2+100+jRS,b2+jRS
+*ENDDO
+
+! =========================================================
+! 8. CREATE SKINS
+! Centre top bay is open in middle span only.
+! =========================================================
+TYPE,1
+MAT,1
+SECNUM,1
+
+*DO,i,0,n_rib-1
+    b1 = i*1000
+    b2 = (i+1)*1000
+    ymid = (i+0.5)*dy
+
+    ! upper leading skin
+    *DO,j,1,jFS-1
+        A,b1+j,b2+j,b2+j+1,b1+j+1
+    *ENDDO
+
+    ! upper centre skin outside open region
+    *IF,ymid,LT,open_y1,THEN
+        *DO,j,jFS,jRS-1
+            A,b1+j,b2+j,b2+j+1,b1+j+1
+        *ENDDO
+    *ENDIF
+
+    *IF,ymid,GT,open_y2,THEN
+        *DO,j,jFS,jRS-1
+            A,b1+j,b2+j,b2+j+1,b1+j+1
+        *ENDDO
+    *ENDIF
+
+    ! upper trailing skin
+    *DO,j,jRS,npt-1
+        A,b1+j,b2+j,b2+j+1,b1+j+1
+    *ENDDO
+
+    ! lower full skin
+    *DO,j,1,npt-1
+        A,b1+100+j,b1+100+j+1,b2+100+j+1,b2+100+j
+    *ENDDO
+*ENDDO
+
+! =========================================================
+! 9. CREATE ALUMINIUM SUPPORT TUBE
+! Beam from root to 70% semi-span
+! =========================================================
+TYPE,2
+MAT,2
+SECNUM,4
+
+*DO,i,0,n_tube-1
+    b1 = i*1000
+    b2 = (i+1)*1000
+    L,b1+500,b2+500
+*ENDDO
+
+! =========================================================
+! 10. MESH SHELL AREAS
+! =========================================================
+ALLSEL,ALL
+ASEL,ALL
+ACLEAR,ALL
+
+TYPE,1
+MAT,1
+SECNUM,1
+ESIZE,esize
+AMESH,ALL
+
+ALLSEL,ALL
+
+! =========================================================
+! 11. MESH ALUMINIUM TUBE
+! =========================================================
+TYPE,2
+MAT,2
+SECNUM,4
+
+LSEL,S,LOC,X,tube_x
+LSEL,R,LOC,Z,tube_z
+LESIZE,ALL,esize
+LMESH,ALL
+
+ALLSEL,ALL
+
+! =========================================================
+! 12. BOUNDARY CONDITION
+! Root fixed at y = 0
+! =========================================================
+NSEL,S,LOC,Y,0
+D,ALL,ALL,0
+ALLSEL,ALL
+
+! =========================================================
+! 13. LOAD CASE
+! Simple upward tip load
+! =========================================================
+NSEL,S,LOC,Y,span
+*GET,ntip,NODE,0,COUNT
+Fnode = 50/ntip
+F,ALL,FZ,Fnode
+ALLSEL,ALL
+
+! =========================================================
+! 14. SOLVE
+! =========================================================
+/SOLU
+ANTYPE,STATIC
+SOLVE
+FINISH
+
+! =========================================================
+! 15. POSTPROCESS
+! =========================================================
+/POST1
+SET,LAST
+
+/ESHAPE,1
+/EDGE,1
+/VIEW,1,1,1,0.7
+/REPLOT
+
+PLNSOL,U,SUM
+PLNSOL,S,EQV
+
+FINISH
